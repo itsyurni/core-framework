@@ -10,8 +10,8 @@ class View
 
 
         $temp = new Template([
-            "temp_path" => "../views/",
-            "cache_path" => "../views/cache/",
+            "temp_path" => "../app/views/",
+            "cache_path" => "../app/views/cache/",
             "optimize" => false,
         ]);
         $temp->render($view,$args);
