@@ -1,0 +1,15 @@
+{
+    "name": "yurni/mvc-mvc",
+    "authors": [
+        {
+            "name": "Harizi Riyadh",
+            "email": "harizi.harizi@gmail.com"
+        }
+    ],
+
+    "autoload": {
+        "psr-4": {
+            "yurni\\framework\\" : "."
+        }
+    }
+}
