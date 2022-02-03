@@ -3,6 +3,7 @@ namespace yurni\framework\Router;
 use yurni\framework\Application;
 use yurni\framework\Http\Response;
 use yurni\framework\Http\Request;
+use yurni\framework\Exception\NotFoundException;
 
 class Router {
 
@@ -64,14 +65,22 @@ class Router {
     public function resolve()
     {
         $request_url = $this->request->getPath();
-
         $request_method = $this->request->getMethod();
        
         if($this->matchRoot($request_url,$request_method)){
-            
+
             if(is_array($this->callback)){
-                $this->callback[0] = new $this->callback[0]();
-				return call_user_func_array($this->callback,$this->paramList());
+                if(class_exists($this->callback[0])){
+                    $this->callback[0] = new $this->callback[0]();
+                    if(method_exists($this->callback[0],$this->callback[1]))
+                        return call_user_func_array($this->callback,$this->paramList());
+                    else
+                        throw new NotFoundException("Method <b>\"{$this->callback[1]}\"</b> not found !");
+                }else{
+                    throw new NotFoundException("Controller <b>\"{$this->callback[0]}\"</b> not found !");
+                }
+                
+				
 			}
 			if(is_callable($this->callback)){
 				echo call_user_func_array($this->callback,$this->paramList());

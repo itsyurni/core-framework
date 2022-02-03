@@ -1,6 +1,6 @@
 <?php
 namespace yurni\framework\Http;
-
+use yurni\framework\Exception\RuntimeException;
 
 class fileUpload {
 
@@ -72,9 +72,10 @@ class fileUpload {
         $location = rtrim($location, "/");
 
         if(!is_dir($location)) {
-            throw new \RuntimeException("Upload directory '{$location}' not found", 1);
+
+            throw new RuntimeException("Upload directory '{$location}' not found", 1);
         } else if(!is_writable($location)) {
-            throw new \RuntimeException("Upload directory '{$location}' is not writable", 2);
+            throw new RuntimeException("Upload directory '{$location}' is not writable", 2);
         }
         
         $filepath = $location."/".$this->getFilename();

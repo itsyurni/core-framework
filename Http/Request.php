@@ -2,10 +2,12 @@
 namespace yurni\framework\Http;
 use yurni\framework\Application;
 use yurni\framework\Router\Router;
+use yurni\framework\Exception\ForbiddenException;
 
 class Request {
 
-    public function __construct(Application $app,Router $route){
+    public function __construct(Application $app,Router $route)
+    {
         $this->_server = $_SERVER;
         $this->app = $app;
         $this->route = $route;
@@ -13,18 +15,19 @@ class Request {
     }
 
 
-    public function getSession(){
+    public function getSession()
+    {
         return new Session();
     }
 
-    public function server($val){
+    public function server($val)
+    {
         return isset($this->_server[$val]) ? $this->_server[$val] : false;
     }
 
     public function getPath()
     {
         $path_info = $this->server("PATH_INFO");
-
         if(!$path_info) {
             $request_uri = $this->server('REQUEST_URI');
             $script_name = $this->server('SCRIPT_NAME');
@@ -36,9 +39,9 @@ class Request {
             
             $path_info = explode('?', $path_info, 2)[0];
         }
-
         return '/'.trim($path_info, '/');
     }
+
     public function file($key)
     {
         $_file = $this->files[$key];
@@ -92,10 +95,9 @@ class Request {
     public function hasMultiFiles($key)
     {
         $files = $this->files[$key] ?? false;
-
         if(!$files) return FALSE;
-
         $uploaded_files = $files["tmp_name"];
+
         if(!is_array($uploaded_files)) return FALSE;
 
         foreach($uploaded_files as $tmp_file) {
@@ -110,15 +112,18 @@ class Request {
         return new fileUpload($_file);
     }
 
-    public function getMethod(){
+    public function getMethod()
+    {
         return strtolower($this->server('REQUEST_METHOD'));
     }
 
-    public function isPost(){
+    public function isPost()
+    {
         return ($this->getMethod() == "post") ? true : false;
     }
 
-    public function isGet(){
+    public function isGet()
+    {
         return ($this->getMethod() == "get") ? true : false;
     }
 
@@ -148,7 +153,8 @@ class Request {
         return file_get_contents("php://input");
     }
 
-    public function inputs(){
+    public function inputs()
+    {
         $body = [];
         if($this->isGet()){
             foreach($_GET as $key => $val){
@@ -163,7 +169,8 @@ class Request {
         return $body;
     }
 
-    public function input($key){
+    public function input($key)
+    {
         return $this->inputs()[$key] ?? null;
     }
 }

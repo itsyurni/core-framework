@@ -30,19 +30,19 @@ class Response  {
         header($type.':'.$val);
         return $this;
     }
-    public function setContentType($val){
-        
+
+    public function setContentType($val)
+    {
         return $this->setHeader(self::$HEADER_CONTENT_TYPE,$val);
     }
+
     public function json(array $data, $status = null)
     {
-
         $json = json_encode($data);
         $this->body = $json;
         $this->setContentType(self::$CONTENT_TYPE_JSON)
         ->setStatusCode($status);
         return $this;
-
     }
 
     public function html($content, $status = null)
@@ -50,12 +50,13 @@ class Response  {
         $this->setStatusCode($status)->setContentType(self::$CONTENT_TYPE_HTML);
         $this->body = $content;
         return $this;
-
     }
+
     public function redirect($url)
     {
         return $this->setHeader("Location", $url);
     }
+    
     public function reset(){
         $this->body = null;
         return $this;

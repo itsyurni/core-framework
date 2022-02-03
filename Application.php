@@ -6,14 +6,15 @@ use yurni\framework\Http\Response;
 use yurni\framework\Router\Router;
 
 class Application {
-
+    public static database $db;
     public static string $ROOT_DIR;
     protected Router $route;
+    public array $container;
     const VERSION = '0.0.1';
 
-    public function __construct(array $container = []) {
+    public function __construct($cont = array()) {
         $this->route = new Router($this);
-        $this->container = $container;
+        $db = new db("test","root","", $host = 'localhost');
     }
     public function getContainer()
     {
@@ -52,6 +53,11 @@ class Application {
     }  
 
     public function run(){
-        return $this->route->resolve();
+        try{
+            return $this->route->resolve();
+        }catch(\Exception $e){
+            echo $e->errorMessage();
+        }
+        
     }
 }
