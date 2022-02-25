@@ -1,11 +1,10 @@
 <?php
 namespace yurni\framework;
 
-class Model
+Abstract class Model
 {
-	public static $db;
 
-	public function __construct(array $db){
-
-	}
+	public static function db(): db {
+        return new db();
+    }
 }

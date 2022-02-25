@@ -1,26 +1,44 @@
 <?php
 namespace yurni\framework\Router;
-use yurni\framework\Http\Request;
-use yurni\framework\Http\Response;
 
 class Route {
-    public $path;
-    public function __construct($path,$callback,$args = []){
-      $this->path = $path;
-      $this->callback = $callback;
-      $this->args = [];
-      foreach($args as $arg){
-          if($arg instanceof res){
-             return array_push($this->args,new res);
-          }
-          array_push($this->args,$arg);
-  
-      }
-  
+
+    private $name;
+    
+    private $action;
+
+    private $method;
+
+    private $uri;
+
+    public $params = [];
+
+    public function  __construct($method,$uri,$action)
+    {
+        $this->action = $action;
+        $this->method = $method;
+        $this->uri = $uri;
     }
-    public function __call($method, $args) {
-       return call_user_func_array($this->callback,$this->args); 
-      
-  
+
+    public function getAction()
+    {
+        return $this->action;
     }
-  }
+    
+    public function getMethod()
+    {
+        return $this->method;
+    }
+    
+    public function getUri()
+    {
+        return $this->uri;
+    }
+        
+    public function getParam()
+    {
+        return $this->params;
+    }
+                
+
+}

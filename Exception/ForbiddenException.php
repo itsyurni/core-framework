@@ -7,5 +7,5 @@ class ForbiddenException extends \Exception {
         //error message
         $errorMsg = '<b>'.$this->getMessage().'</b>';
         return $errorMsg;
-      }
+    }
 }

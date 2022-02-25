@@ -5,14 +5,13 @@ use yurni\framework\Router\Router;
 use yurni\framework\Exception\ForbiddenException;
 
 class Request {
-
-    public function __construct(Application $app,Router $route)
+ 
+    public function __construct()
     {
         $this->_server = $_SERVER;
-        $this->app = $app;
-        $this->route = $route;
         $this->files = $_FILES;
     }
+
 
 
     public function getSession()
@@ -127,6 +126,20 @@ class Request {
         return ($this->getMethod() == "get") ? true : false;
     }
 
+    public function isPut()
+    {
+        return ($this->getMethod() == "put") ? true : false;
+    }
+    
+    public function isPatch()
+    {
+        return ($this->getMethod() == "patch") ? true : false;
+    }
+    
+    public function isDelete()
+    {
+        return ($this->getMethod() == "delete") ? true : false;
+    }
     public function isHttps()
     {
         if($this->server('HTTPS')) {
@@ -149,7 +162,8 @@ class Request {
             return false;
     }
 
-    public function body(){
+    public function body()
+    {
         return file_get_contents("php://input");
     }
 
@@ -166,6 +180,14 @@ class Request {
                 $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
             }
         }
+        if($this->isPut() || $this->isDelete() || $this->isPatch()){
+            //$body = $this->body();
+            $obj = json_decode($this->body(),true);
+            foreach($obj as $key => $val){
+                $body[$key] = $val;
+            }
+        }
+        
         return $body;
     }
 

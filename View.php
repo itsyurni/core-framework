@@ -1,5 +1,6 @@
 <?php
-namespace yurni\framework\View;
+namespace yurni\framework;
+use yurni\framework\View\Template;
 
 class View
 {

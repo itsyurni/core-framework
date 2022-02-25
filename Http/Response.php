@@ -10,9 +10,7 @@ class Response  {
     protected array $header;
     public $body;
     
-    public function __construct(Application $app,Router $route){
-        $this->app = $app;
-        $this->route = $route;
+    public function __construct(){
         $this->body = null;
         $this->reset();
     }
@@ -36,7 +34,7 @@ class Response  {
         return $this->setHeader(self::$HEADER_CONTENT_TYPE,$val);
     }
 
-    public function json(array $data, $status = null)
+    public function json(array $data = [], int $status = 200)
     {
         $json = json_encode($data);
         $this->body = $json;
@@ -45,7 +43,7 @@ class Response  {
         return $this;
     }
 
-    public function html($content, $status = null)
+    public function html($content = "", int $status = 200)
     {
         $this->setStatusCode($status)->setContentType(self::$CONTENT_TYPE_HTML);
         $this->body = $content;
