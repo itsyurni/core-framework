@@ -3,33 +3,64 @@ namespace yurni\framework\Router;
 
 class Route {
 
-    private $name;
     
-    private $action;
+    protected $callback;
 
-    private $method;
+    protected $method;
 
-    private $uri;
+    protected $uri;
 
-    public $params = [];
+    protected array $params;
 
-    public function  __construct($method,$uri,$action)
+    public function  __construct($method,$uri,$callback)
     {
-        $this->action = $action;
+        $this->callback = $callback;
         $this->method = $method;
         $this->uri = $uri;
     }
 
-    public function getAction()
+    public function getCallback()
     {
-        return $this->action;
+        return $this->callback;
     }
     
     public function getMethod()
     {
         return $this->method;
     }
-    
+
+    public function isPost()
+    {
+        return $this->getMethod() == "post" ? true : false;
+    }
+ 
+    public function isPut()
+    {
+        return $this->getMethod() == "put" ? true : false;
+    }
+
+    public function isGet()
+    {
+        return $this->getMethod() == "get" ? true : false;
+    }   
+
+    public function isPatch()
+    {
+        return $this->getMethod() == "patch" ? true : false;
+    }
+
+    public function isAny()
+    {
+        return $this->getMethod() == "any" ? true : false;
+    }
+    public function isDelete()
+    {
+        return $this->getMethod() == "delete" ? true : false;
+    }
+    public function isOnly()
+    {
+        return $this->getMethod() == "only" ? true : false;
+    }
     public function getUri()
     {
         return $this->uri;
@@ -37,7 +68,12 @@ class Route {
         
     public function getParam()
     {
-        return $this->params;
+        return $this->params ?? [];
+    }
+    public function setParam($key,$val){
+        $this->params[$key] = $val;
+    
+        return $this;
     }
                 
 

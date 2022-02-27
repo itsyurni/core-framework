@@ -3,26 +3,43 @@ namespace yurni\framework;
 use yurni\framework\Router\Router;
 use yurni\framework\Http\Request;
 use yurni\framework\Http\Response;
+
 class Application {
 
     protected Router $router; 
     protected Request $request;
     protected Response $response;
-    protected array $config = [];
+    protected array $config;
+    protected container $container;
     public function __construct($conf = []) 
     {
         $this->request = new Request();
         $this->response = new Response();
         $this->router = new Router($this,$this->request,$this->response);
         $this->config = $conf;
+        $this->container = new container;
+
+ 
     }
-        
-
-
-    public function getRouter(){
+         
+    public function getContainer()
+    {
+        return $this->container;
+    }       
+    public function getRouter()
+    {
         return $this->router;
     }
-
+      
+    public function getResponse()
+    {
+        return $this->response;
+    }
+            
+    public function getRequest()
+    {
+        return $this->request;
+    }
     /********************************************************************************
      * Router proxy methods
      *******************************************************************************/
