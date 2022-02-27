@@ -68,8 +68,10 @@ class Router {
 
     public function register($method,$route,$action)
     {
-       
-        $this->routes[] = new Route($method,$this->routeToRegex($route),$action); 
+    
+        $route = new Route($method,$this->routeToRegex($route),$action); 
+        $this->routes[] = $route;
+        return $route;
     }
 
     protected function findRoute($path,$method)
@@ -103,8 +105,20 @@ class Router {
        
         if($route)
         {
-            $yurni = new action($this->app,$route);
-            $yurni->build();
+
+            $getRouteMid = count($route->middlewares) > 0 ? $route->middlewares : false;
+            
+            if($getRouteMid){
+                    foreach($getRouteMid as $key){
+                        if(!$this->app->getMiddleware($key)){
+                            return false;
+                        }
+                    }
+                    return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
+                
+            }else{
+                return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
+            }
         }else{
 
             $this->response->setStatusCode(404);

@@ -20,7 +20,19 @@ class action
     }
 
     public function build(){
-        $this->app->getContainer()->setParam($this->pm)->get($this->action);
+        
+        $getRouteMid = $this->route->middlewares[0] ?? false;
+        if($getRouteMid){
+            if($this->app->getMiddleware($getRouteMid)){
+                return $this->app->getContainer()->setParam($this->pm)->get($this->action);
+            }
+        }else{
+            
+            return $this->app->getContainer()->setParam($this->pm)->get($this->action);
+        }
+        
+     
+        
     }
    
 }

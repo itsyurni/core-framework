@@ -195,4 +195,9 @@ class Request {
     {
         return $this->inputs()[$key] ?? null;
     }
+    public function __get( $key )
+    {
+        return $this->input($key) ?? null;
+    }
+
 }

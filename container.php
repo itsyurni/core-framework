@@ -5,6 +5,8 @@ use ReflectionClass;
 use ReflectionParameter;
 use ReflectionMethod;
 use ReflectionFunction;
+use yurni\framework\Exception\NotFoundException;
+
 class container {
     protected $callback;
     protected array $pm = [];

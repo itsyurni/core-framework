@@ -11,8 +11,12 @@ class Application {
     protected Response $response;
     protected array $config;
     protected container $container;
+    protected $middlewares = array();
     public function __construct($conf = []) 
     {
+        $dotenv = \Dotenv\Dotenv::createImmutable('../');
+        $dotenv->load();
+        
         $this->request = new Request();
         $this->response = new Response();
         $this->router = new Router($this,$this->request,$this->response);
@@ -21,7 +25,23 @@ class Application {
 
  
     }
-         
+
+    public function setMiddleware($name, $callable)
+    {
+        $this->middlewares[$name] = $callable;
+    }     
+
+    public function getMiddleware($name)
+    {
+        return $this->hasMiddleware($name) ? $this->getContainer()->get($this->middlewares[$name]) : false;
+    }  
+    public function hasMiddleware($name)
+    {
+        return isset($this->middlewares[$name]);
+    }
+
+
+    
     public function getContainer()
     {
         return $this->container;

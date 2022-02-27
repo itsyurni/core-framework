@@ -12,11 +12,14 @@ class Route {
 
     protected array $params;
 
+    public $middlewares = array();
+    
     public function  __construct($method,$uri,$callback)
     {
         $this->callback = $callback;
         $this->method = $method;
         $this->uri = $uri;
+ 
     }
 
     public function getCallback()
@@ -72,9 +75,16 @@ class Route {
     }
     public function setParam($key,$val){
         $this->params[$key] = $val;
-    
         return $this;
     }
-                
+    public function middleware($middlewares)
+    {
+        $this->middlewares = array_merge($this->middlewares, (array) $middlewares);
+        return $this;
+    }
+    public function __call($method, $params)
+    {
+        return $this->middleware($method);
+    }   
 
 }
