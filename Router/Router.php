@@ -101,6 +101,7 @@ class Router {
     {
         $request_url = $this->request->getPath();
         $request_method = $this->request->getMethod();
+        
         $route = $this->findRoute($request_url,$request_method);
        
         if($route)
@@ -114,9 +115,11 @@ class Router {
                             return false;
                         }
                     }
+                    $this->response->setStatusCode(200);
                     return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
                 
             }else{
+                $this->response->setStatusCode(200);
                 return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
             }
         }else{
