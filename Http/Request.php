@@ -2,18 +2,29 @@
 namespace yurni\framework\Http;
 use yurni\framework\Application;
 use yurni\framework\Router\Router;
+use yurni\framework\Router\Route;
 use yurni\framework\Exception\ForbiddenException;
 
 class Request {
- 
-    public function __construct()
+    public $files;
+    protected $_server;
+    protected Route $route;
+    public function __construct(Application $app)
     {
+        $this->app = $app;
         $this->_server = $_SERVER;
         $this->files = $_FILES;
     }
 
-
-
+    
+    public function setRoute(Route $route){
+        $this->route = $route;
+        return $this;
+    }
+    
+    public function route(){
+        return $this->route;
+    }
     public function getSession()
     {
         return new Session();
@@ -170,12 +181,12 @@ class Request {
     public function inputs()
     {
         $body = [];
-        if($this->isGet()){
+        if($this->isGet() || isset($_GET)){
             foreach($_GET as $key => $val){
                 $body[$key] = filter_input(INPUT_GET, $key, FILTER_SANITIZE_SPECIAL_CHARS);
             }
         }
-        if($this->isPost()){
+        if($this->isPost() || isset($_POST)){
             foreach($_POST as $key => $val){
                 $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
             }

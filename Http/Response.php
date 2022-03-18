@@ -8,7 +8,7 @@ class Response  {
     protected static $CONTENT_TYPE_JSON = "application/json";
     protected static $HEADER_CONTENT_TYPE = "Content-Type";
     protected array $header;
-    public $body;
+    protected $body;
     
     public function __construct(){
         $this->body = null;
@@ -42,7 +42,13 @@ class Response  {
         ->setStatusCode($status);
         return $this;
     }
-
+    public function body(){
+        return $this->body;
+    }
+    public function setBody($body){
+        $this->body = $body;
+        return $this;
+    }
     public function html($content = "", int $status = 200)
     {
         $this->setStatusCode($status)->setContentType(self::$CONTENT_TYPE_HTML);

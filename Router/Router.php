@@ -12,6 +12,7 @@ class Router {
     protected Request $request;
     protected Response $response;
     protected array $handle;
+    protected $container;
     protected $patterns = [
         ':all' => '(.*)',
         ':id' => '(\d+)',
@@ -25,12 +26,12 @@ class Router {
         ':date' => '([0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]))',
     ];
     
-    public function __construct(Application $app,Request $req,Response $res) 
+    public function __construct(Application $app) 
     {
         $this->app = $app;
-        $this->response = $res;
-        $this->request = $req;
-        $this->response->setStatusCode(404);
+        $this->response = $this->app->response;
+        $this->request = $this->app->request;
+        
 
         $this->handle("404",function(){
             echo "Router Not Found !";
@@ -103,28 +104,26 @@ class Router {
         $request_method = $this->request->getMethod();
         
         $route = $this->findRoute($request_url,$request_method);
-       
+        
         if($route)
         {
-
+            $this->request->setRoute($route);
             $getRouteMid = count($route->middlewares) > 0 ? $route->middlewares : false;
-            
+
+
             if($getRouteMid){
                     foreach($getRouteMid as $key){
                         if(!$this->app->getMiddleware($key)){
                             return false;
                         }
                     }
-                    $this->response->setStatusCode(200);
-                    return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
+                    return $this->app->resolveCallback($route->getCallback(),$route->getParam());
                 
             }else{
-                $this->response->setStatusCode(200);
-                return $this->app->getContainer()->setParam($route->getParam())->get($route->getCallback());
+
+                return $this->app->resolveCallback($route->getCallback(),$route->getParam());
             }
         }else{
-
-            $this->response->setStatusCode(404);
             return $this->getHandle("404");
         }
     }

@@ -1,19 +1,30 @@
 <?php
 namespace yurni\framework;
-use yurni\framework\View;
-abstract class Controller{
+use yurni\framework\Http\Request;
+use yurni\framework\db;
 
-    protected static View $view;
-    protected array $data = [];
+class Controller {
     
-    public function __construct($data = [])
+    public db $db;
+
+    public function __construct(Application $app)
     {
-        $this->data = $data;
-       
-        self::$view = new View();
-        
-        
+       $this->app = $app;
+       $this->db = new db;
+       $this->request = $this->app->request;
+       $this->response = $this->app->response;
+
     }
-    
-   
-} 
+    public function render($view, $args = [])
+    {
+        $this->app->setViewAttr([
+            "route" => $this->request->route()
+        ]);
+        
+        $this->app->setViewAttr($args);
+  
+        return View::render($view,$this->app->getViewAttr());
+    }
+
+
+}

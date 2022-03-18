@@ -19,10 +19,16 @@ class Template {
 		$this->cache_enabled = $data["cache"] ?? false;
 		$this->optimize = $data["optimize"] ?? true;
 	}
-	public function render($file, $data = array()) {
+	public function render($file, $params = array()) {
 		$cached_file = $this->cache($file);
-	    extract($data, EXTR_SKIP);
+		
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+        ob_start();
 	   	require $cached_file;
+		return ob_get_clean();
+		
 	}
 
 	public function cache($file) {

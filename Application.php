@@ -7,25 +7,52 @@ use yurni\framework\Http\Response;
 class Application {
 
     protected Router $router; 
-    protected Request $request;
-    protected Response $response;
+    public Request $request;
+    public Response $response;
     protected array $config;
     protected container $container;
     protected $middlewares = array();
-    public function __construct($conf = []) 
+    protected $viewAttr = [];
+   
+    public function __construct() 
     {
         $dotenv = \Dotenv\Dotenv::createImmutable('../');
         $dotenv->load();
-        
-        $this->request = new Request();
-        $this->response = new Response();
-        $this->router = new Router($this,$this->request,$this->response);
-        $this->config = $conf;
+        $this->request = new Request($this);
+        $this->response = new Response($this);
+        $this->router = new Router($this);
         $this->container = new container;
+        
+        $this->container->injectArgs([
+            get_class($this->response) => $this->response,
+            get_class($this->request) => $this->request,
+            get_class($this) => $this
+        ]);
 
+        $this->viewAttr = [
+            "app" => $this,
+            "appRequest" => $this->request,
+            "appResponse" => $this->response
+        ];
  
     }
+    public function setViewAttr($args = []){
 
+        foreach($args as $key => $val){
+            $this->viewAttr[$key] = $val;
+        } 
+        return $this;
+    }
+
+    public function getViewAttr(){
+        return $this->viewAttr;
+    }
+
+    public function resolveCallback($callback,$args){
+   
+        $this->container->injectArgs($args)->call($callback);
+        return $this;
+    }
     public function setMiddleware($name, $callable)
     {
         $this->middlewares[$name] = $callable;
@@ -33,7 +60,7 @@ class Application {
 
     public function getMiddleware($name)
     {
-        return $this->hasMiddleware($name) ? $this->getContainer()->get($this->middlewares[$name]) : false;
+        return $this->hasMiddleware($name) ? $this->getContainer()->call($this->middlewares[$name]) : false;
     }  
     public function hasMiddleware($name)
     {

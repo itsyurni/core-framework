@@ -12,6 +12,8 @@ class Route {
 
     protected array $params;
 
+    protected $name;
+    
     public $middlewares = array();
     
     public function  __construct($method,$uri,$callback)
@@ -31,7 +33,17 @@ class Route {
     {
         return $this->method;
     }
-
+    
+    public function getName()
+    {
+        return $this->name;
+    }
+        
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
     public function isPost()
     {
         return $this->getMethod() == "post" ? true : false;

@@ -9,70 +9,128 @@ use yurni\framework\Exception\NotFoundException;
 
 class container {
     protected $callback;
-    protected array $pm = [];
-    public function setParam($pm){
-        $this->pm = $pm;
+    protected array $args = [];
+
+    public function injectArgs($args)
+    {
+        foreach($args as $key => $val){
+            $this->args[$key] = $val;
+        }
         return $this;
     }
-    public function generateParameters(Reflector $reflection)
+    public function generateArgs(Reflector $reflection)
     {
+
+        
         $parameters = [];
-        foreach ($reflection->getParameters() as $key => $param) {
-            $class = $param->getType() && !$param->getType()->isBuiltin() ? new ReflectionClass($param->getType()->getName())
-                : null;
-            if (!is_null($class)) {
+        
+        if(method_exists($reflection,"getParameters")){
+            $reflect = $reflection;
+        }else{
+            $reflect = $reflection->getConstructor();
+        }
+       
+        foreach ($reflect->getParameters() as $key => $param) {
+
+            if($param->getType() && !$param->getType()->isBuiltin()){
+                $class = new ReflectionClass($param->getType()->getName());
+            }else{
+                $class = null;
+            }
+
+            if(!is_null($class) && array_key_exists($class->getName(),$this->args)){
+                $parameters[] = $this->args[$class->getName()];
+            }
+
+            else if (!is_null($class)) {
                 $cl = $class->getName();
                 if(class_exists($cl)){
                     $parameters[] = new $cl;
                 }
             } else {
                 
-                if (empty($this->pm)) {
+                if (empty($this->args)) {
                     continue;
                 }
-                $uriParams = array_reverse($this->pm);
-                $parameters[] = array_pop($this->pm);
-                $uriParams = array_reverse($this->pm);
+                $uriParams = array_reverse($this->args);
+                $parameters[] = array_pop($this->args);
+                $uriParams = array_reverse($this->args);
             }
         }
 
         return $parameters;
     }
-    protected function callable(){
-        return new ReflectionFunction($this->callback);
+    protected function callable($callback)
+    {
+        return new ReflectionFunction($callback);
     }
-    protected function classMethod(){
-        if(class_exists($this->callback[0]))
+
+    protected function abc(){
+        
+    }
+    protected function classMethod($callback)
+    {
+        if(class_exists($callback[0]))
         {
-            $this->callback[0] = new $this->callback[0]();
-            if(method_exists($this->callback[0],$this->callback[1]))
-            {
-                return new ReflectionMethod($this->callback[0],$this->callback[1]);
+            
+            if(isset($callback[1])){
+                // $callback[0] = new $callback[0]();
+                $callback[0] = new ReflectionClass($callback[0]);
+        
+                $callback[0]->newInstanceArgs($args);
+                if(method_exists($callback[0],$callback[1]))
+                {
+                    return new ReflectionMethod($callback[0],$callback[1]);
+                }else{
+                    throw new NotFoundException("Method <b>\"{$callback[1]}\"</b> not found !");
+                }
             }else{
-                throw new NotFoundException("Method <b>\"{$this->callback[1]}\"</b> not found !");
+         
+                return new ReflectionClass($callback[0]);
             }
+
         }else{
-            throw new NotFoundException("Controller <b>\"{$this->callback[0]}\"</b> not found !");
+            throw new \NotFoundException("Controller <b>\"{$callback[0]}\"</b> not found !");
         }
     }
-    protected function getTypeCallback(){
-        if(is_array($this->callback))
+
+
+
+    public function call($callback)
+    {
+
+        if(is_array($callback))
         {
-            return $this->classMethod();
-        }elseif(is_callable($this->callback))
-        {
-            return $this->callable();
+            if(isset($callback[1])){
+                list($class,$method) = $callback;
+                $reflect = new ReflectionMethod($class,$method);
+                $callback[0] = new ReflectionClass($callback[0]);
+                $constructor = $callback[0]->getConstructor();
+
+                if(!empty($constructor)) {
+                    
+                    $parameters = $constructor->getParameters();
+                    $args = $this->generateArgs($callback[0]);
+                }
+                $callback[0] = $callback[0]->newInstanceArgs($args ?? []);
+  
+            }
     
+            $args = $this->generateArgs($reflect) ?? [];
+            return call_user_func_array($callback,$args);
+
+        }elseif(is_callable($callback)){
+            $reflect = $this->callable($callback);
+            $args = $this->generateArgs($reflect) ?? [];
+            return call_user_func_array($callback,$args);
+            
         }else{
-            throw new Exception("error");
+            throw new \Exception("error");
         }
+        
+        
 
-
+        
     }
-    public function get($callback){
-        $this->callback = $callback;
-        $callback = $this->getTypeCallback();
-        $pm = $this->generateParameters($callback) ?? [];
-        return call_user_func_array($this->callback, $pm);
-    }
+    
 }
