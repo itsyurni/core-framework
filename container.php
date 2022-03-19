@@ -9,13 +9,17 @@ use yurni\framework\Exception\NotFoundException;
 
 class container {
     protected $callback;
-    protected array $args = [];
+    public array $args = [];
 
     public function injectArgs($args)
     {
         foreach($args as $key => $val){
-            $this->args[$key] = $val;
+
+            if(!isset($this->args[$key])){
+                $this->args[$key] = $val;
+            }
         }
+
         return $this;
     }
     public function generateArgs(Reflector $reflection)
@@ -65,9 +69,6 @@ class container {
         return new ReflectionFunction($callback);
     }
 
-    protected function abc(){
-        
-    }
     protected function classMethod($callback)
     {
         if(class_exists($callback[0]))

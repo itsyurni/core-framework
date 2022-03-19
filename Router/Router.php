@@ -12,7 +12,7 @@ class Router {
     protected Request $request;
     protected Response $response;
     protected array $handle;
-    protected $container;
+
     protected $patterns = [
         ':all' => '(.*)',
         ':id' => '(\d+)',
@@ -31,21 +31,24 @@ class Router {
         $this->app = $app;
         $this->response = $this->app->response;
         $this->request = $this->app->request;
-        
-
         $this->handle("404",function(){
             echo "Router Not Found !";
         });
-        
-
     }
+
     public function handle($type,$callback){
         return $this->handle[$type] = $callback;
     }
     
+    public function setPattern($patterns){
+        foreach($patterns as $key => $val){
+            $this->patterns[$key] = $val;
+        } 
+        return $this;
+    }
 
     public function getHandle($type){
-        return $this->app->getContainer()->get($this->handle[$type]);
+        return $this->app->container()->call($this->handle[$type]);
     }
 
     public function routeToRegex($route)
@@ -65,12 +68,10 @@ class Router {
         return $this->routes;
     }
 
-
-
-    public function register($method,$route,$action)
+    public function register($method,$uri,$action)
     {
-    
-        $route = new Route($method,$this->routeToRegex($route),$action); 
+        $routeUri = $this->routeToRegex($uri);
+        $route = new Route($method,$routeUri,$action); 
         $this->routes[] = $route;
         return $route;
     }
@@ -97,19 +98,51 @@ class Router {
     }
 
 
-   
+    public function resolveCallback($callback,$args){
+        $output = $this->app->container()->injectArgs($args)->call($callback);
+        if(is_array($output))
+            echo $this->response->json($output)->body();
+        else
+            echo $this->response->html($output)->body();
+        return $this;
+     
+    }
+
     public function resolve()
     {
         $request_url = $this->request->getPath();
         $request_method = $this->request->getMethod();
-        
+        /**
+        *  Search the Route Actuel
+        *  
+        */
         $route = $this->findRoute($request_url,$request_method);
+
         
         if($route)
         {
-            $this->request->setRoute($route);
-            $getRouteMid = count($route->middlewares) > 0 ? $route->middlewares : false;
+            /**
+             *  Define the route in request Classe
+             *  
+             */
 
+            $this->request->setRoute($route);
+
+            /**
+             *  get The Callback of the root
+             *  
+             */
+            $routeCallback = $route->getCallback();
+
+            /**
+             *  get The Args & pm of the root
+             *  
+             */
+
+            $routeArgs = $route->getParam();
+
+
+            $getRouteMid = count($route->middlewares) > 0 ? $route->middlewares : false;
 
             if($getRouteMid){
                     foreach($getRouteMid as $key){
@@ -117,11 +150,11 @@ class Router {
                             return false;
                         }
                     }
-                    return $this->app->resolveCallback($route->getCallback(),$route->getParam());
+                    return $this->resolveCallback($routeCallback,$routeArgs);
                 
             }else{
 
-                return $this->app->resolveCallback($route->getCallback(),$route->getParam());
+                return $this->resolveCallback($routeCallback,$routeArgs);
             }
         }else{
             return $this->getHandle("404");

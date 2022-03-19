@@ -2,7 +2,7 @@
 namespace yurni\framework;
 use PDO;
 
-class db extends Application{
+class db {
 
     private PDO $pdo;
 

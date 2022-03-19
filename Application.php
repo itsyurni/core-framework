@@ -9,32 +9,35 @@ class Application {
     protected Router $router; 
     public Request $request;
     public Response $response;
-    protected array $config;
-    protected container $container;
-    protected $middlewares = array();
-    protected $viewAttr = [];
-   
-    public function __construct() 
+    protected array $middlewares;
+    protected array $viewAttr;
+    protected array $namespace;
+    public function __construct($inputs = []) 
     {
-        $dotenv = \Dotenv\Dotenv::createImmutable('../');
-        $dotenv->load();
+
         $this->request = new Request($this);
         $this->response = new Response($this);
         $this->router = new Router($this);
-        $this->container = new container;
+        $this->middlewares = [];
+        $this->loadEnv();
+        $this->loadViewAttr();
+        $this->setNamespace($inputs);
+    }
+    
+    private function loadEnv(){
+        $dotenv = \Dotenv\Dotenv::createImmutable('../');
+        $dotenv->safeLoad();
         
-        $this->container->injectArgs([
-            get_class($this->response) => $this->response,
-            get_class($this->request) => $this->request,
-            get_class($this) => $this
-        ]);
-
-        $this->viewAttr = [
+    }
+    private function loadViewAttr(){
+        return $this->viewAttr = [
             "app" => $this,
             "appRequest" => $this->request,
             "appResponse" => $this->response
         ];
- 
+    }
+    public function router(){
+        return $this->router;
     }
     public function setViewAttr($args = []){
 
@@ -48,11 +51,7 @@ class Application {
         return $this->viewAttr;
     }
 
-    public function resolveCallback($callback,$args){
-   
-        $this->container->injectArgs($args)->call($callback);
-        return $this;
-    }
+
     public function setMiddleware($name, $callable)
     {
         $this->middlewares[$name] = $callable;
@@ -60,19 +59,26 @@ class Application {
 
     public function getMiddleware($name)
     {
-        return $this->hasMiddleware($name) ? $this->getContainer()->call($this->middlewares[$name]) : false;
+        return $this->hasMiddleware($name) ? $this->container()->call($this->middlewares[$name]) : false;
     }  
+
     public function hasMiddleware($name)
     {
         return isset($this->middlewares[$name]);
     }
-
-
     
-    public function getContainer()
+    public function container()
     {
-        return $this->container;
-    }       
+        $container = new container;
+
+        $container->injectArgs([
+            get_class($this->response) => $this->response,
+            get_class($this->request) => $this->request,
+            get_class($this) => $this
+        ]);
+        return $container;
+    }   
+
     public function getRouter()
     {
         return $this->router;
@@ -186,6 +192,7 @@ class Application {
     {
         return $this->router->register($methods,$path,$callback);   
     }  
+
     public function run()
     {
         try{
